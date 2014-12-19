@@ -58,8 +58,8 @@ def main():
     logging.info("some message")
 
     parser = argparse.ArgumentParser(description='Crawl /r/learnprogramming')
-    parser.add_argument("--start_url", dest="start_url")
-    parser.add_argument("--storage_dir", dest="storage_dir")
+    parser.add_argument("--start_url", dest="start_url", required=True)
+    parser.add_argument("--storage_dir", dest="storage_dir", required=True)
     args = parser.parse_args()
     crawler = Crawler(args.start_url, args.storage_dir)
     crawler.crawl()
