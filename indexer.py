@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from util import *
 import argparse
 import base64
