@@ -67,8 +67,8 @@ def create_index_from_dir(stored_documents_dir, index_dir):
 
 def main():
     parser = argparse.ArgumentParser(description='Index /r/learnprogramming')
-    parser.add_argument("--stored_documents_dir", dest="stored_documents_dir")
-    parser.add_argument("--index_dir", dest="index_dir")
+    parser.add_argument("--stored_documents_dir", dest="stored_documents_dir", required=True)
+    parser.add_argument("--index_dir", dest="index_dir", required=True)
     args = parser.parse_args()
     create_index_from_dir(args.stored_documents_dir, args.index_dir)
 
