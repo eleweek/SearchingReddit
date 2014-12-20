@@ -45,17 +45,15 @@ class Indexer(object):
             self.inverted_index[word].append((position, current_id))
     
     def save_on_disk(self, index_dir):
-        inverted_index_file_name = os.path.join(index_dir, "inverted_index")
-        forward_index_file_name  = os.path.join(index_dir, "forward_index")
-        url_to_id_file_name      = os.path.join(index_dir, "url_to_id")
 
-        inverted_index_file = open(inverted_index_file_name, "w")
-        forward_index_file = open(forward_index_file_name, "w")
-        url_to_id_file = open(url_to_id_file_name, "w")
+        def dump_json_to_file(source, file_name):
+            file_path = os.path.join(index_dir, file_name)
+            json.dump(source, open(file_path, "w"), indent=4)
 
-        json.dump(self.inverted_index, inverted_index_file, indent=4)
-        json.dump(self.forward_index, forward_index_file, indent=4)
-        json.dump(self.url_to_id, url_to_id_file, indent=4)
+        dump_json_to_file(self.inverted_index, "inverted_index")
+        dump_json_to_file(self.forward_index, "forward_index")
+        dump_json_to_file(self.url_to_id, "url_to_id")
+
 
 def create_index_from_dir(stored_documents_dir, index_dir):
     indexer = Indexer()
