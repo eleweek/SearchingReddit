@@ -38,6 +38,7 @@ class Indexer(object):
         self.doc_count += 1
         assert url not in self.url_to_id
         current_id = self.doc_count
+        self.url_to_id[url] = current_id
         self.forward_index[current_id] = parsed_text
         for position,word in enumerate(parsed_text):
             # TODO: defaultdict
