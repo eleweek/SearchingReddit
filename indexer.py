@@ -46,13 +46,9 @@ class Indexer(object):
     
     def save_on_disk(self, index_dir):
 
-        def open_writeable_file(file_name):
-            file_path = os.path.join(index_dir, file_name)
-            return open(file_path, "w")
-
         def dump_json_to_file(source, file_name):
-            writeable_file = open_writeable_file(file_name)
-            json.dump(source, writeable_file, indent=4)
+            file_path = os.path.join(index_dir, file_name)
+            json.dump(source, open(file_path, "w"), indent=4)
 
         dump_json_to_file(self.inverted_index, "inverted_index")
         dump_json_to_file(self.forward_index, "forward_index")
