@@ -81,6 +81,8 @@ class Searcher(object):
         return sum([self.inverted_index[word] for word in query_words], [])
     """
 
+    # The algorithms based on:
+    # http://rcrezende.blogspot.com/2010/08/smallest-relevant-text-snippet-for.html
     def generate_snippet(self, query_words, doc_id):
         query_words_in_window = []
         best_window_len = 100500 # inf would be better :)
