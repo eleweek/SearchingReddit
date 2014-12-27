@@ -1,0 +1,13 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %} This is a search engine{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <p><h1>Hello, user</h1></p>
+    <p>{{wtf.quick_form(form)}}</p>
+  </div>
+{% endblock %}
+
+

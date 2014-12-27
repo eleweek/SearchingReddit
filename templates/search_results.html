@@ -1,0 +1,19 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %} This is a search engine{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <p>
+        <h1>User requested [{{query}}]
+        </h1>
+    </p>
+    <ol>
+        {% for url in urls %}
+            <li><a href="{{url}}">{{url}}</a></li>
+        {% endfor %}
+    </ol>
+
+  </div>
+{% endblock %}
+
