@@ -17,16 +17,19 @@ class SearchForm(Form):
 @app.route("/", methods=["GET", "POST"])
 def index():
     search_form = SearchForm(csrf_enabled=False)
-    print search_form.user_query.data
     if search_form.validate_on_submit():
         return redirect(url_for("search_results", query=search_form.user_query.data))
     return render_template("index.html", form=search_form)
 
 @app.route("/search_results/<query>")
 def search_results(query):
-    pos_and_docids = searcher.find_documents(query.split(" "))
-    urls = [searcher.get_url(id) for pos,id in pos_and_docids]
-    return render_template("search_results.html", query=query, urls=urls)
+    query_words = query.split(" ")
+    docids = searcher.find_documents_AND(query_words)
+    urls = [searcher.get_url(docid) for docid in docids]
+    texts = [" ".join(searcher.generate_snippet(query_words, docid)) for docid in docids]
+    #texts = [" ".join(searcher.get_document_text(docid)) for docid in docids]
+
+    return render_template("search_results.html", query=query, urls_and_texts=zip(urls, texts))
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

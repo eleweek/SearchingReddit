@@ -9,8 +9,17 @@
         </h1>
     </p>
     <ol>
-        {% for url in urls %}
-            <li><a href="{{url}}">{{url}}</a></li>
+        {% for url_and_text in urls_and_texts %}
+            {% set url = url_and_text[0] %}
+            {% set text  = url_and_text[1] %}
+            <li>
+                <p>
+                    <a href="{{url}}">{{url}}</a>
+                </p>
+                <p>
+                    {{ text }}
+                </p>
+            </li>
         {% endfor %}
     </ol>
 
