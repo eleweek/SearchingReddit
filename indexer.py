@@ -4,6 +4,7 @@ import argparse
 import base64
 import os
 import json
+from collections import defaultdict
 
 # Two main types of indexes
 # -- Forward index
@@ -73,13 +74,43 @@ class Searcher(object):
 
         self.id_to_url = {v : k for k,v in self.url_to_id.iteritems()}
     
+    """
     # query [word1, word2] -> returns all documents that contain one of these words
     # sort of OR
-    def find_documents(self, words):
-        return sum([self.inverted_index[word] for word in words], [])
+    def find_documents(self, query_words):
+        return sum([self.inverted_index[word] for word in query_words], [])
+    """
 
-    def get_url(self, id):
-        return self.id_to_url[id]
+    def generate_snippet(self, query_words, doc_id):
+        query_words_in_window = []
+        best_window_len = 100500 # inf would be better :)
+        best_window = []
+        for pos, word in enumerate(self.forward_index[unicode(doc_id)]):
+            if word in query_words:
+                query_words_in_window.append((word, pos))
+                if len(query_words_in_window) > 1 and query_words_in_window[0][0] == word:
+                    query_words_in_window.pop(0)
+                current_window_len = pos - query_words_in_window[0][1] + 1
+                if len(set(query_words_in_window)) == len(query_words) and current_window_len < best_window_len:
+                    best_window = query_words_in_window[:]
+                    best_len = current_window_len
+
+        return self.forward_index[unicode(doc_id)][best_window[0][1]:(best_window[len(best_window) - 1][1] + 1)]
+
+    def find_documents_AND(self, query_words):
+        # docid -> number of query words
+        query_word_count = defaultdict(set)
+        for query_word in query_words:
+            for (pos, docid) in self.inverted_index[query_word]:
+                query_word_count[docid].add(query_word)
+
+        return [doc_id for doc_id,unique_hits in query_word_count.iteritems() if len(unique_hits) == len(query_words)]
+
+    def get_document_text(self, doc_id):
+        return self.forward_index[unicode(doc_id)]
+
+    def get_url(self, doc_id):
+        return self.id_to_url[doc_id]
 
 
 def create_index_from_dir(stored_documents_dir, index_dir):
