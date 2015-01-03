@@ -25,7 +25,7 @@ class Crawler(object):
         while True:
             if (ok_url_count + error_url_count) % 100 == 0:
                 logging.info("Crawled {} oks -- {} errors -- {}".format(ok_url_count + error_url_count, ok_url_count, error_url_count))
-            logging.debug("current page is {}".format(current_page_url))
+            #logging.debug("current page is {}".format(current_page_url))
             ok_url_count += 1
             current_page = downloadRedditUrl(current_page_url)
             bs = BeautifulSoup(current_page)
@@ -49,7 +49,7 @@ class Crawler(object):
 
             next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
             assert next_page_url is not None
-            logging.debug("First post is {}".format(post_links[0]))
+            #logging.debug("First post is {}".format(post_links[0]))
             current_page_url = next_page_url
             time.sleep(2)
 
