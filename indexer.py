@@ -87,7 +87,7 @@ class Searcher(object):
     def generate_snippet(self, query_words, doc_id):
         query_words_in_window = []
         best_window_len = 100500 # TODO: inf would be better :)
-        best_words_in_window = 0
+        words_in_best_window = 0
         best_window = []
         for pos, word in enumerate(self.forward_index[unicode(doc_id)]):
             if word in query_words:
@@ -95,10 +95,11 @@ class Searcher(object):
                 if len(query_words_in_window) > 1 and query_words_in_window[0][0] == word:
                     query_words_in_window.pop(0)
                 current_window_len = pos - query_words_in_window[0][1] + 1
-                wiw = len(set(query_words_in_window)) 
-                if wiw > best_words_in_window or (wiw == best_words_in_window and current_window_len < best_window_len):
+                wiw = len(set(map(lambda x: x[0], query_words_in_window))) 
+                if wiw > words_in_best_window or (wiw == words_in_best_window and current_window_len < best_window_len):
+                    words_in_best_window = wiw
                     best_window = query_words_in_window[:]
-                    best_len = current_window_len
+                    best_window_len = current_window_len
 
         doc_len = len(self.forward_index[unicode(doc_id)])
         # TODO: 15 should be a named constant

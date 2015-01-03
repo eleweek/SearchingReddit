@@ -28,7 +28,7 @@ def index():
 def search_results(query):
     query_words = query_terms(query)
     app.logger.info("Requested [{}]".format(" ".join(query_words)))
-    docids = searcher.find_documents_OR(query_words)
+    docids = searcher.find_documents_AND(query_words)
     urls = [searcher.get_url(docid) for docid in docids]
     texts = [searcher.generate_snippet(query_words, docid) for docid in docids]
     #texts = [" ".join(searcher.get_document_text(docid)) for docid in docids]
