@@ -27,7 +27,7 @@ def search_results(query):
     query_words = query_terms(query)
     docids = searcher.find_documents_AND(query_words)
     urls = [searcher.get_url(docid) for docid in docids]
-    texts = [" ".join(searcher.generate_snippet(query_words, docid)) for docid in docids]
+    texts = [searcher.generate_snippet(query_words, docid) for docid in docids]
     #texts = [" ".join(searcher.get_document_text(docid)) for docid in docids]
 
     return render_template("search_results.html", query=query, urls_and_texts=zip(urls, texts))

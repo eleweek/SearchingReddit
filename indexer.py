@@ -103,7 +103,7 @@ class Searcher(object):
         snippet_start = max(best_window[0][1] - 15, 0)
         snippet_end = min(doc_len, best_window[len(best_window) - 1][1] + 1 + 15)
 
-        return self.forward_index[unicode(doc_id)][snippet_start:snippet_end]
+        return [(word, word in query_words) for word in self.forward_index[unicode(doc_id)][snippet_start:snippet_end]]
 
     def find_documents_AND(self, query_words):
         # docid -> number of query words
