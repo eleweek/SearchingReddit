@@ -86,7 +86,7 @@ class Searcher(object):
     # http://rcrezende.blogspot.com/2010/08/smallest-relevant-text-snippet-for.html
     def generate_snippet(self, query_words, doc_id):
         query_words_in_window = []
-        best_window_len = 100500 # inf would be better :)
+        best_window_len = 100500 # TODO: inf would be better :)
         best_window = []
         for pos, word in enumerate(self.forward_index[unicode(doc_id)]):
             if word in query_words:
@@ -98,7 +98,12 @@ class Searcher(object):
                     best_window = query_words_in_window[:]
                     best_len = current_window_len
 
-        return self.forward_index[unicode(doc_id)][best_window[0][1]:(best_window[len(best_window) - 1][1] + 1)]
+        doc_len = len(self.forward_index[unicode(doc_id)])
+        # TODO: 15 should be a named constant
+        snippet_start = max(best_window[0][1] - 15, 0)
+        snippet_end = min(doc_len, best_window[len(best_window) - 1][1] + 1 + 15)
+
+        return self.forward_index[unicode(doc_id)][snippet_start:snippet_end]
 
     def find_documents_AND(self, query_words):
         # docid -> number of query words
