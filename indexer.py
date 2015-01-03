@@ -87,6 +87,7 @@ class Searcher(object):
     def generate_snippet(self, query_words, doc_id):
         query_words_in_window = []
         best_window_len = 100500 # TODO: inf would be better :)
+        best_words_in_window = 0
         best_window = []
         for pos, word in enumerate(self.forward_index[unicode(doc_id)]):
             if word in query_words:
@@ -94,7 +95,8 @@ class Searcher(object):
                 if len(query_words_in_window) > 1 and query_words_in_window[0][0] == word:
                     query_words_in_window.pop(0)
                 current_window_len = pos - query_words_in_window[0][1] + 1
-                if len(set(query_words_in_window)) == len(query_words) and current_window_len < best_window_len:
+                wiw = len(set(query_words_in_window)) 
+                if wiw > best_words_in_window or (wiw == best_words_in_window and current_window_len < best_window_len):
                     best_window = query_words_in_window[:]
                     best_len = current_window_len
 
@@ -113,6 +115,15 @@ class Searcher(object):
                 query_word_count[docid].add(query_word)
 
         return [doc_id for doc_id,unique_hits in query_word_count.iteritems() if len(unique_hits) == len(query_words)]
+
+    # sort of OR
+    def find_documents_OR(self, query_words):
+        docids = set()
+        for query_word in query_words:
+            for (pos, docid) in self.inverted_index[query_word]:
+                docids.add(docid)
+
+        return docids
 
     def get_document_text(self, doc_id):
         return self.forward_index[unicode(doc_id)]
