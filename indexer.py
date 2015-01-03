@@ -111,7 +111,7 @@ class Searcher(object):
         # docid -> number of query words
         query_word_count = defaultdict(set)
         for query_word in query_words:
-            for (pos, docid) in self.inverted_index[query_word]:
+            for (pos, docid) in self.inverted_index.get(query_word, []):
                 query_word_count[docid].add(query_word)
 
         return [doc_id for doc_id,unique_hits in query_word_count.iteritems() if len(unique_hits) == len(query_words)]
@@ -120,7 +120,7 @@ class Searcher(object):
     def find_documents_OR(self, query_words):
         docids = set()
         for query_word in query_words:
-            for (pos, docid) in self.inverted_index[query_word]:
+            for (pos, docid) in self.inverted_index.get(query_word, []):
                 docids.add(docid)
 
         return docids
