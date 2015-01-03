@@ -5,6 +5,7 @@ import base64
 import os
 import json
 from collections import defaultdict
+from lang_proc import doc_terms 
 
 # Two main types of indexes
 # -- Forward index
@@ -81,6 +82,8 @@ class Searcher(object):
         return sum([self.inverted_index[word] for word in query_words], [])
     """
 
+    # The algorithms based on:
+    # http://rcrezende.blogspot.com/2010/08/smallest-relevant-text-snippet-for.html
     def generate_snippet(self, query_words, doc_id):
         query_words_in_window = []
         best_window_len = 100500 # inf would be better :)
@@ -118,7 +121,8 @@ def create_index_from_dir(stored_documents_dir, index_dir):
     for filename in os.listdir(stored_documents_dir):
         opened_file = open(os.path.join(stored_documents_dir, filename))
         # TODO: words are separated not just by space, but by commas, semicolons, etc
-        parsed_doc = parseRedditPost(opened_file.read()).split(" ")
+        doc_raw = parseRedditPost(opened_file.read())      
+        parsed_doc = doc_terms(doc_raw)
         indexer.add_document(base64.b16decode(filename), parsed_doc)
 
     indexer.save_on_disk(index_dir)
