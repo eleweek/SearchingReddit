@@ -7,10 +7,6 @@ from base64 import b16encode
 import argparse
 from util import *
 
-# Supress request info messages
-logging.getLogger("requests").setLevel(logging.WARNING)
-
-
 class Crawler(object):
     def __init__(self, start_url, storage_dir):
         self.start_url = start_url 
@@ -50,15 +46,25 @@ class Crawler(object):
                 logging.error("An error occured while crawling!")
                 logging.error(u"An error occured while crawling {}".format(current_page_url))
                 logging.exception(e)
+            
+            try:
+                next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
+                for i in next_page_url: print i
+                print type(next_page_url)
 
-            next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
-            assert next_page_url is not None
+            except TypeError:
+                next_page_url = None
+
+            #assert next_page_url is not None
             #logging.debug("First post is {}".format(post_links[0]))
             current_page_url = next_page_url
             time.sleep(2)
 
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
+    # Supress request info messages
+    logging.getLogger("requests").setLevel(logging.WARNING)
+
     logging.info("some message")
 
     parser = argparse.ArgumentParser(description='Crawl /r/learnprogramming')
