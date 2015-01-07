@@ -47,15 +47,9 @@ class Crawler(object):
                 logging.error(u"An error occured while crawling {}".format(current_page_url))
                 logging.exception(e)
             
-            try:
-                next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
-                for i in next_page_url: print i
-                print type(next_page_url)
+            next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
 
-            except TypeError:
-                next_page_url = None
-
-            #assert next_page_url is not None
+            assert next_page_url is not None
             #logging.debug("First post is {}".format(post_links[0]))
             current_page_url = next_page_url
             time.sleep(2)
