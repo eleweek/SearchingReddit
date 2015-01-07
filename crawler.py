@@ -7,6 +7,10 @@ from base64 import b16encode
 import argparse
 from util import *
 
+# Supress request info messages
+logging.getLogger("requests").setLevel(logging.WARNING)
+
+
 class Crawler(object):
     def __init__(self, start_url, storage_dir):
         self.start_url = start_url 
