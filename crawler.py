@@ -48,7 +48,6 @@ class Crawler(object):
                 logging.exception(e)
             
             next_page_url = bs.find('a', attrs={'rel' : 'next'})['href']
-
             assert next_page_url is not None
             #logging.debug("First post is {}".format(post_links[0]))
             current_page_url = next_page_url
@@ -58,9 +57,8 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
     # Supress request info messages
     logging.getLogger("requests").setLevel(logging.WARNING)
-
     logging.info("some message")
-
+    
     parser = argparse.ArgumentParser(description='Crawl /r/learnprogramming')
     parser.add_argument("--start_url", dest="start_url", required=True)
     parser.add_argument("--storage_dir", dest="storage_dir", required=True)
