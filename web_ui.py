@@ -4,7 +4,7 @@ from flask_wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from indexer import Searcher
-from lang_proc import query_terms 
+from lang_proc import to_query_terms 
 import logging
 
 app = Flask(__name__)
@@ -26,11 +26,11 @@ def index():
 
 @app.route("/search_results/<query>")
 def search_results(query):
-    query_words = query_terms(query)
-    app.logger.info("Requested [{}]".format(" ".join(query_words)))
-    docids = searcher.find_documents_AND(query_words)
+    query_terms = to_query_terms(query)
+    app.logger.info("Requested [{}]".format(" ".join(map(str, query_terms))))
+    docids = searcher.find_documents_OR(query_terms)
     urls = [searcher.get_url(docid) for docid in docids]
-    texts = [searcher.generate_snippet(query_words, docid) for docid in docids]
+    texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
     #texts = [" ".join(searcher.get_document_text(docid)) for docid in docids]
 
     return render_template("search_results.html", query=query, urls_and_texts=zip(urls, texts))
