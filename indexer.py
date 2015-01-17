@@ -27,7 +27,7 @@ from lang_proc import to_doc_terms
 # Indexer assumes that collection fits in RAM
 class Indexer(object):
     def __init__(self):
-        self.inverted_index = dict()
+        self.inverted_index = defaultdict(list)
         self.forward_index  = dict()
         self.url_to_id      = dict()
         self.doc_count      = 0
@@ -43,9 +43,6 @@ class Indexer(object):
         self.url_to_id[url] = current_id
         self.forward_index[current_id] = parsed_text
         for position,term in enumerate(parsed_text):
-            # TODO: defaultdict
-            if term not in self.inverted_index:
-                self.inverted_index[term] = []
             self.inverted_index[term].append((position, current_id))
     
     def save_on_disk(self, index_dir):
