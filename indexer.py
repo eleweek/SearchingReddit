@@ -6,6 +6,7 @@ import os
 import pickle
 from collections import defaultdict
 from lang_proc import to_doc_terms
+import json
 
 
 # TODO: improve this:
@@ -120,12 +121,29 @@ def create_index_from_dir(stored_documents_dir, index_dir):
     indexer.save_on_disk(index_dir)
 
 
+# replacement function for create_index_from_dir
+def create_index_from_dir_API(stored_documents_dir, index_dir):
+    indexer = Indexer()
+    indexed_docs_num = 0
+    for filename in os.listdir(stored_documents_dir):
+        indexed_docs_num += 1
+        opened_file = open(os.path.join(stored_documents_dir, filename))
+        doc_json = json.load(opened_file)
+        parsed_doc = to_doc_terms(doc_json['text'])
+        indexer.add_document(doc_json['url'], parsed_doc)
+        if indexed_docs_num % 100 == 0:
+            print "Indexed: ", indexed_docs_num
+
+    indexer.save_on_disk(index_dir)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Index /r/learnprogramming')
     parser.add_argument("--stored_documents_dir", dest="stored_documents_dir", required=True)
     parser.add_argument("--index_dir", dest="index_dir", required=True)
+    parser.add_argument("--new_crawler", dest="new_crawler", default=True, action='store_true')
     args = parser.parse_args()
-    create_index_from_dir(args.stored_documents_dir, args.index_dir)
+    (create_index_from_dir_API if args.new_crawler else create_index_from_dir)(args.stored_documents_dir, args.index_dir)
 
 
 if __name__ == "__main__":

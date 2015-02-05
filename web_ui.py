@@ -38,4 +38,4 @@ def search_results(query):
     return render_template("search_results.html", query=query, urls_and_texts=zip(urls, texts))
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run()
