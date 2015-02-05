@@ -1,8 +1,8 @@
-from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 import itertools
 import string
+
 
 class Term(object):
     def __init__(self, full_word):
