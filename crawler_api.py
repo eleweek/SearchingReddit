@@ -6,25 +6,31 @@ from distutils.dir_util import mkpath
 from praw.helpers import submission_stream
 import json
 
+
 def save_submission(submission, storage_dir):
     with open(os.path.join(storage_dir, submission.id), "w") as f:
-        f.write(json.dumps({"url" : submission.permalink,
+        f.write(json.dumps({"url": submission.permalink,
                             "text": submission.selftext}))
         f.close()
 
+
 def get_as_much_stuff_as_possible(storage_dir):
     mkpath(storage_dir, mode=0755)
-    r = praw.Reddit(user_agent='SearchingReddit project 0.2')
-    for method_name in ["get_hot", "get_new", "get_top_from_all", "get_top_from_week", "get_top_from_month", "get_top_from_year", "get_top_from_day", "get_top_from_hour"]:
+    r = praw.Reddit(user_agent='SearchingReddit project 0.2 by /u/godlikesme')
+    for method_name in ["get_hot", "get_new", "get_top_from_all", "get_top_from_week",
+                        "get_top_from_month", "get_top_from_year", "get_top_from_day",
+                        "get_top_from_hour"]:
         method = getattr(r.get_subreddit('learnprogramming'), method_name)
         submissions = method(limit=1000)
         for s in submissions:
             save_submission(s, storage_dir)
 
+
 def crawl_continuously(storage_dir):
     r = praw.Reddit(user_agent='SearchingReddit project 0.2')
     for s in submission_stream(r, "learnprogramming"):
         save_submission(s, storage_dir)
+
 
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
@@ -35,6 +41,7 @@ def main():
 
     get_as_much_stuff_as_possible(args.storage_dir)
     crawl_continuously(args.storage_dir)
+
 
 if __name__ == "__main__":
     main()
