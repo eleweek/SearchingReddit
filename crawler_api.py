@@ -19,7 +19,7 @@ def get_as_much_stuff_as_possible(storage_dir):
 
 
 def crawl_continuously(storage_dir):
-    r = praw.Reddit(user_agent='SearchingReddit project 0.2')
+    r = praw.Reddit(user_agent='SearchingReddit project 0.2 by /u/godlikesme')
     for s in submission_stream(r, "learnprogramming"):
         save_submission(s, storage_dir)
 
