@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, g
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
@@ -10,9 +10,11 @@ import logging
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 Bootstrap(app)
-# TODO configurable
-searcher = Searcher("indexes")
 
+@app.before_first_request
+def init_searcher():
+    # TODO dir configurable
+    g.searcher = Searcher("indexes")
 
 class SearchForm(Form):
     user_query = StringField('user_query', validators=[DataRequired()])
@@ -31,11 +33,11 @@ def index():
 def search_results(query):
     query_terms = to_query_terms(query)
     app.logger.info("Requested [{}]".format(" ".join(map(str, query_terms))))
-    docids = searcher.find_documents_OR(query_terms)
-    urls = [searcher.get_url(docid) for docid in docids]
-    texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
+    docids = g.searcher.find_documents_OR(query_terms)
+    urls = [g.searcher.get_url(docid) for docid in docids]
+    texts = [g.searcher.generate_snippet(query_terms, docid) for docid in docids]
 
     return render_template("search_results.html", query=query, urls_and_texts=zip(urls, texts))
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, host='0.0.0.0')
