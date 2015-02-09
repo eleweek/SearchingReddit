@@ -168,20 +168,7 @@ class Searcher(object):
 
         return docids
 
-"""
-def create_index_from_dir(stored_documents_dir, index_dir, IndexesImplementation=ShelveIndexes):
-    indexer = IndexesImplementation()
-    indexer.start_indexing()
-    for filename in os.listdir(stored_documents_dir):
-        opened_file = open(os.path.join(stored_documents_dir, filename))
-        doc_raw = parseRedditPost(opened_file.read())
-        parsed_doc = to_doc_terms(doc_raw)
-        indexer.add_document(base64.b16decode(filename), parsed_doc)
 
-    indexer.save_on_disk(index_dir)
-"""
-
-# replacement function for create_index_from_dir
 def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementation=ShelveIndexes):
     indexer = IndexesImplementation()
     indexer.start_indexing(index_dir)
@@ -202,9 +189,8 @@ def main():
     parser = argparse.ArgumentParser(description='Index /r/learnprogramming')
     parser.add_argument("--stored_documents_dir", dest="stored_documents_dir", required=True)
     parser.add_argument("--index_dir", dest="index_dir", required=True)
-    parser.add_argument("--new_crawler", dest="new_crawler", default=True, action='store_true')
     args = parser.parse_args()
-    (create_index_from_dir_API if args.new_crawler else create_index_from_dir)(args.stored_documents_dir, args.index_dir)
+    create_index_from_dir_API(args.stored_documents_dir, args.index_dir)
 
 
 if __name__ == "__main__":
