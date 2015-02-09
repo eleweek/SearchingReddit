@@ -5,15 +5,15 @@ import time
 import praw
 from crawler_utils import save_submission
 
-
 # Downloads all the self posts from given subreddit
 # TODO: dynamically change ts_interval
-def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval):
+def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, largest_timestamp):
     mkpath(storage_dir, mode=0755)
     r = praw.Reddit(user_agent='SearchingReddit project 0.2 by /u/godlikesme')
-    now_timestamp = int(time.time())
-    cts2 = now_timestamp + 12*3600
-    cts1 = now_timestamp - ts_interval
+    if largest_timestamp is None:
+        largest_timestamp = int(time.time()) + 12*3600
+    cts2 = largest_timestamp
+    cts1 = largest_timestamp - ts_interval
     # TODO start_timestamp = subreddit creation time
     while True:
         # get submissions here
@@ -33,9 +33,10 @@ def main():
     parser.add_argument("--storage_dir", dest="storage_dir", required=True)
     parser.add_argument("--subreddit", dest="subreddit", required=True, help="Download the whole subreddit")
     parser.add_argument("--timestamp_interval", dest="timestamp_interval", type=int, required=True)
+    parser.add_argument("--largest_timestamp", dest="largest_timestamp", type=int, required=False, default=None)
     args = parser.parse_args()
     
-    download_the_whole_subreddit(args.storage_dir, args.subreddit, args.timestamp_interval)
+    download_the_whole_subreddit(args.storage_dir, args.subreddit, args.timestamp_interval, args.largest_timestamp)
 
 if __name__ == "__main__":
     main()
