@@ -8,7 +8,7 @@
         <h1>User requested [{{query}}]
         </h1>
     </p>
-    <ol>
+    <ol start="{{offset+1}}">
         {% for url_and_text in urls_and_texts %}
             {% set url = url_and_text[0] %}
             {% set text  = url_and_text[1] %}
@@ -32,6 +32,24 @@
             </p>
         {% endfor %}
     </ol>
+
+    <nav>
+      <ul class="pagination">
+          {#<li>
+          <a href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+          </li>#}
+        {% for page_num in range(total_pages_num) %} 
+        <li {% if loop.index == page %} class=active {% endif %}><a href="{{url_for("search_results", query=query, page=loop.index)}}">{{loop.index}}</a></li>
+        {% endfor %}
+        {#<li>
+          <a href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+          </li>#}
+      </ul>
+    </nav>
 
   </div>
 {% endblock %}

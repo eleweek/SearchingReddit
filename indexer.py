@@ -119,6 +119,17 @@ class ShelveIndexes(BaseIndexes):
         return self.id_to_url[doc_id]
 
 
+class SearchResults:
+    def __init__(self, docids):
+        self.docids = docids
+
+    def get_page(self, page, page_size):
+        start_num = (page-1)*page_size
+        return self.docids[start_num:start_num+page_size] 
+
+    def total_pages(self, page_size):
+        return (len(self.docids) + page_size) / page_size
+
 class Searcher(object):
     def __init__(self, index_dir, IndexesImplementation):
         self.indexes = IndexesImplementation()
@@ -157,7 +168,7 @@ class Searcher(object):
             for (pos, docid) in self.indexes.get_documents(query_term):
                 query_term_count[docid].add(query_term)
 
-        return [doc_id for doc_id, unique_hits in query_term_count.iteritems() if len(unique_hits) == len(query_terms)]
+        return SearchResults([doc_id for doc_id, unique_hits in query_term_count.iteritems() if len(unique_hits) == len(query_terms)])
 
     # sort of OR
     def find_documents_OR(self, query_terms):
@@ -166,7 +177,7 @@ class Searcher(object):
             for (pos, docid) in self.indexes.get_documents(query_term):
                 docids.add(docid)
 
-        return docids
+        return SearchResults(list(docids))
 
 
 def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementation=ShelveIndexes):
