@@ -6,6 +6,7 @@ from wtforms.validators import DataRequired
 from indexer import Searcher, InMemoryIndexes, ShelveIndexes
 from lang_proc import to_query_terms
 import logging
+import cgi
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -42,7 +43,7 @@ def search_results(query, page):
     urls = [g.searcher.indexes.get_url(docid) for docid in docids]
     texts = [g.searcher.generate_snippet(query_terms, docid) for docid in docids]
 
-    return render_template("search_results.html", offset=((page-1)*page_size), total_pages_num=search_results.total_pages(page_size), page=page, query=query, urls_and_texts=zip(urls, texts))
+    return render_template("search_results.html", offset=((page-1)*page_size), total_pages_num=search_results.total_pages(page_size), page=page, query=cgi.escape(query), urls_and_texts=zip(urls, texts))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
