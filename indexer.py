@@ -5,12 +5,13 @@ from collections import defaultdict
 from lang_proc import to_doc_terms
 import json
 import shelve
+from progressbar import ProgressBar, Percentage, Bar, RotatingMarker
 
 
 class Document(object):
     def __init__(self, parsed_text, score):
         self.parsed_text = parsed_text
-        self.score = self.score
+        self.score = score
 
 
 class ShelveIndexes(object):
@@ -131,15 +132,18 @@ class Searcher(object):
 def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementation=ShelveIndexes):
     indexer = IndexesImplementation()
     indexer.start_indexing(index_dir)
+    filenames = [name for name in os.listdir(stored_documents_dir)]
+    widgets = [' Indexing: ', Percentage(), ' ', Bar(marker=RotatingMarker())]
     indexed_docs_num = 0
-    for filename in os.listdir(stored_documents_dir):
+    progressbar = ProgressBar(widgets=widgets, maxval=len(filenames))
+    for filename in filenames:
         indexed_docs_num += 1
+        progressbar.update(indexed_docs_num)
         opened_file = open(os.path.join(stored_documents_dir, filename))
         doc_json = json.load(opened_file)
         parsed_doc = to_doc_terms(doc_json['text'])
         indexer.add_document(doc_json['url'], Document(parsed_doc, int(doc_json['score'])))
-        if indexed_docs_num % 100 == 0:
-            print "Indexed: ", indexed_docs_num
+        progressbar.update(indexed_docs_num)
 
     indexer.save_on_disk(index_dir)
 
