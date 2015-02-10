@@ -1,75 +1,19 @@
 #!/usr/bin/env python
 import argparse
 import os
-import pickle
 from collections import defaultdict
 from lang_proc import to_doc_terms
 import json
 import shelve
 
 
-class BaseIndexes(object):
-    # TODO: remove these assumptions
-    # assumes that add_document() is never called twice for a document
-    # assumes that a document has an unique url
-    # parsed_text is a list of Terms
-    def add_document(self, url, parsed_text):
-        self.doc_count += 1
-        assert url not in self.url_to_id
-        current_id = self.doc_count
-        self.url_to_id[url] = current_id
-        self.id_to_url[current_id] = url
-        self.forward_index[current_id] = parsed_text
-        for position, term in enumerate(parsed_text):
-            self.inverted_index[term].append((position, current_id))
-
-    def get_documents(self, query_term):
-        return self.inverted_index.get(query_term, [])
-
-    def get_document_text(self, doc_id):
-        return self.forward_index[str(doc_id)]
-
-    def get_url(self, doc_id):
-        return self.id_to_url[str(doc_id)]
+class Document(object):
+    def __init__(self, parsed_text, score):
+        self.parsed_text = parsed_text
+        self.score = self.score
 
 
-class InMemoryIndexes(BaseIndexes):
-    def __init__(self):
-        # map(dict): from word to ids of documents that contain the word
-        self.inverted_index = defaultdict(list)
-        # list of parsed documents (map from doc id to list of words in a document)
-        self.forward_index = dict()
-        self.url_to_id = dict()
-        self.id_to_url = dict()
-        self.doc_count = 0
-
-    def start_indexing(self):
-        pass
-
-    def save_on_disk(self, index_dir):
-
-        def dump_pickle_to_file(source, file_name):
-            file_path = os.path.join(index_dir, file_name)
-            pickle.dump(source, open(file_path, "w"))
-
-        dump_pickle_to_file(self.inverted_index, "inverted_index")
-        dump_pickle_to_file(self.forward_index, "forward_index")
-        dump_pickle_to_file(self.url_to_id, "url_to_id")
-
-    def load_from_disk(self, index_dir):
-        def load_pickle_from_file(file_name):
-            file_path = os.path.join(index_dir, file_name)
-            dst = pickle.load(open(file_path))
-            return dst
-
-        self.inverted_index = load_pickle_from_file("inverted_index")
-        self.forward_index = load_pickle_from_file("forward_index")
-        self.url_to_id = load_pickle_from_file("url_to_id")
-        self.id_to_url = {v: k for k, v in self.url_to_id.iteritems()}
-        print len(self.forward_index)
-
-
-class ShelveIndexes(BaseIndexes):
+class ShelveIndexes(object):
     def __init__(self):
         # map(dict): from word to ids of documents that contain the word
         self.inverted_index = None
@@ -96,14 +40,14 @@ class ShelveIndexes(BaseIndexes):
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n")
         self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"), "n")
 
-    def add_document(self, url, parsed_text):
+    def add_document(self, url, doc):
         self.doc_count += 1
         assert url.encode('utf8') not in self.url_to_id
         current_id = self.doc_count
         self.url_to_id[url.encode('utf8')] = current_id
         self.id_to_url[current_id] = url
-        self.forward_index[str(current_id)] = parsed_text
-        for position, term in enumerate(parsed_text):
+        self.forward_index[str(current_id)] = doc
+        for position, term in enumerate(doc.parsed_text):
             stem = term.stem.encode('utf8')
             postings_list = self.inverted_index[stem] if stem in self.inverted_index else []
             postings_list.append((position, current_id))
@@ -113,7 +57,7 @@ class ShelveIndexes(BaseIndexes):
         return self.inverted_index.get(query_term.stem.encode('utf8'), [])
 
     def get_document_text(self, doc_id):
-        return self.forward_index[str(doc_id)]
+        return self.forward_index[str(doc_id)].parsed_doc
 
     def get_url(self, doc_id):
         return self.id_to_url[doc_id]
@@ -193,7 +137,7 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
         opened_file = open(os.path.join(stored_documents_dir, filename))
         doc_json = json.load(opened_file)
         parsed_doc = to_doc_terms(doc_json['text'])
-        indexer.add_document(doc_json['url'], parsed_doc)
+        indexer.add_document(doc_json['url'], Document(parsed_doc, int(doc_json['score'])))
         if indexed_docs_num % 100 == 0:
             print "Indexed: ", indexed_docs_num
 
