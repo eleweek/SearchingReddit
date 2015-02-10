@@ -3,10 +3,11 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from indexer import Searcher, InMemoryIndexes, ShelveIndexes
+from indexer import Searcher, ShelveIndexes
 from lang_proc import to_query_terms
 import logging
 import cgi
+from datetime import datetime
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -35,6 +36,7 @@ def index():
 @app.route("/search_results/<query>", defaults={'page': 1})
 @app.route("/search_results/<query>/<int:page>")
 def search_results(query, page):
+    start_time = datetime.now()
     query_terms = to_query_terms(query)
     app.logger.info("Requested [{}]".format(" ".join(map(str, query_terms))))
     page_size = 25
@@ -42,8 +44,16 @@ def search_results(query, page):
     docids = search_results.get_page(page, page_size)
     urls = [g.searcher.indexes.get_url(docid) for docid in docids]
     texts = [g.searcher.generate_snippet(query_terms, docid) for docid in docids]
+    finish_time = datetime.now()
 
-    return render_template("search_results.html", offset=((page-1)*page_size), total_pages_num=search_results.total_pages(page_size), page=page, query=cgi.escape(query), urls_and_texts=zip(urls, texts))
+    return render_template("search_results.html",
+                           processing_time=(finish_time-start_time),
+                           offset=((page-1)*page_size),
+                           total_doc_num=search_results.total_doc_num(),
+                           total_pages_num=search_results.total_pages(page_size),
+                           page=page,
+                           query=cgi.escape(query),
+                           urls_and_texts=zip(urls, texts))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

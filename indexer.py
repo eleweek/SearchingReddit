@@ -125,10 +125,14 @@ class SearchResults:
 
     def get_page(self, page, page_size):
         start_num = (page-1)*page_size
-        return self.docids[start_num:start_num+page_size] 
+        return self.docids[start_num:start_num+page_size]
 
     def total_pages(self, page_size):
         return (len(self.docids) + page_size) / page_size
+
+    def total_doc_num(self):
+        return len(self.docids)
+
 
 class Searcher(object):
     def __init__(self, index_dir, IndexesImplementation):
