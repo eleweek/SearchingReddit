@@ -38,6 +38,9 @@ def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, large
         cts2 = cts1
         cts1 = cts2 - current_ts_interval
 
+        if cts1 < 0:
+            break
+
         if len(search_results) <= 7:
             current_ts_interval *= 2
             logging.debug("Increasing ts interval to {}".format(current_ts_interval))
