@@ -3,7 +3,7 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from indexer import Searcher, ShelveIndexes
+from indexer import Searcher, ShelveIndexes, Document
 from lang_proc import to_query_terms
 import logging
 import cgi
