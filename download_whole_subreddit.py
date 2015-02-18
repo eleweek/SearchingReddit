@@ -19,7 +19,11 @@ def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, large
     # TODO start_timestamp = subreddit creation time
     while True:
         # get submissions here
-        search_results = list(r.search('timestamp:{}..{}'.format(cts1, cts2), subreddit=subreddit_name, syntax='cloudsearch'))
+        try:
+            search_results = list(r.search('timestamp:{}..{}'.format(cts1, cts2), subreddit=subreddit_name, syntax='cloudsearch'))
+        except Exception as e:
+            logging.exception(e)
+            continue
 
         logging.debug("Got {} submissions in interval {}..{}".format(len(search_results), cts1, cts2))
         for submission in search_results:
