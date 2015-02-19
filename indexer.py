@@ -6,12 +6,7 @@ from lang_proc import to_doc_terms
 import json
 import shelve
 from progressbar import ProgressBar, Percentage, Bar, RotatingMarker
-
-
-class Document(object):
-    def __init__(self, parsed_text, score):
-        self.parsed_text = parsed_text
-        self.score = score
+import workaround
 
 
 class ShelveIndexes(object):
@@ -55,9 +50,9 @@ class ShelveIndexes(object):
         self.forward_index[str(current_id)] = doc
         for position, term in enumerate(doc.parsed_text):
             stem = term.stem.encode('utf8')
-            postings_list = self.inverted_index[stem] if stem in self.inverted_index else []
-            postings_list.append((position, current_id))
-            self.inverted_index[stem] = postings_list
+            if stem not in self.inverted_index:
+                self.inverted_index[stem] = []
+            self.inverted_index[stem].append((position, current_id))
 
     def get_documents(self, query_term):
         return self.inverted_index.get(query_term.stem.encode('utf8'), [])
@@ -74,7 +69,7 @@ class ShelveIndexes(object):
 
 class SearchResults(object):
     def __init__(self, docids_with_relevance):
-        self.docids, self.relevances = zip(*docids_with_relevance)
+        self.docids, self.relevances = zip(*docids_with_relevance) if docids_with_relevance else ([], [])
 
     def get_page(self, page, page_size):
         start_num = (page-1)*page_size
@@ -159,7 +154,7 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
             indexer.sync()
             print indexed_docs_num, "Synced!"
 
-        indexer.add_document(doc_json['url'], Document(parsed_doc, int(doc_json['score'])))
+        indexer.add_document(doc_json['url'], workaround.Document(parsed_doc, int(doc_json['score'])))
         # progressbar.update(indexed_docs_num)
 
     indexer.save_on_disk(index_dir)

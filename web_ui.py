@@ -3,11 +3,12 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from indexer import Searcher, ShelveIndexes, Document
+from indexer import Searcher, ShelveIndexes
 from lang_proc import to_query_terms
 import logging
 import cgi
 from datetime import datetime
+import workaround
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
