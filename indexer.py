@@ -18,11 +18,12 @@ class ShelveIndexes(object):
         self.url_to_id = None
         self.id_to_url = dict()
         self.doc_count = 0
+        self.block_count = 0 
 
     def save_on_disk(self, index_dir):
-        self.inverted_index.close()
         self.forward_index.close()
         self.url_to_id.close()
+        self._merge_blocks()
 
     def load_from_disk(self, index_dir):
         self.inverted_index = shelve.open(os.path.join(index_dir, "inverted_index"))
@@ -32,16 +33,38 @@ class ShelveIndexes(object):
         print len(self.forward_index)
 
     def start_indexing(self, index_dir):
-        self.inverted_index = shelve.open(os.path.join(index_dir, "inverted_index"), "n", writeback=True)
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n", writeback=True)
         self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"), "n", writeback=True)
+        self.index_dir = index_dir
 
     def sync(self):
         self.inverted_index.sync()
         self.forward_index.sync()
         self.url_to_id.sync()
 
+    def _merge_blocks(self):
+        print "Merging blocks!"
+        blocks = [shelve.open(os.path.join(self.index_dir, "inverted_index_block{}".format(i))) for i in xrange(self.block_count)]
+        keys = sum([block.keys() for block in blocks],[])
+        print "Total word count", len(keys)
+        merged_index = shelve.open(os.path.join(self.index_dir, "inverted_index"), "n", writeback=True)
+        for key in keys:
+            print "MERGING", key
+            merged_index[key] = sum([block.get(key, []) for block in blocks],[])
+
+        merged_index.close()
+
+    def _create_new_ii_block(self):
+        print "Created a new block!"
+        if self.inverted_index:
+            self.inverted_index.close()
+        self.inverted_index = shelve.open(os.path.join(self.index_dir, "inverted_index_block{}".format(self.block_count)), "n", writeback=True)
+        self.block_count += 1
+
     def add_document(self, url, doc):
+        if self.doc_count % 200 == 0:
+            self._create_new_ii_block()
+
         self.doc_count += 1
         assert url.encode('utf8') not in self.url_to_id
         current_id = self.doc_count
