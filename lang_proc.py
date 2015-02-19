@@ -19,7 +19,7 @@ class Term(object):
         return hash(self.stem)
 
     def __repr__(self):
-        return "Term {}({})".format(self.stem, self.full_word)
+        return "Term {}({})".format(self.stem.encode('utf8'), self.full_word.encode('utf8'))
 
     def __str__(self):
         return repr(self)
