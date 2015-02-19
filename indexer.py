@@ -79,16 +79,13 @@ class ShelveIndexes(object):
             stem = term.stem.encode('utf8')
             if stem not in self.inverted_index:
                 self.inverted_index[stem] = []
-            self.inverted_index[stem].append((position, current_id))
+            self.inverted_index[stem].append(workaround.InvertedIndexHit(current_id, position, doc.score))
 
     def get_documents(self, query_term):
         return self.inverted_index.get(query_term.stem.encode('utf8'), [])
 
     def get_document_text(self, doc_id):
         return self.forward_index[str(doc_id)].parsed_text
-
-    def get_document_score(self, doc_id):
-        return self.forward_index[str(doc_id)].score
 
     def get_url(self, doc_id):
         return self.id_to_url[doc_id]
@@ -140,9 +137,7 @@ class Searcher(object):
 
         return [(term.full_word, term in query_terms) for term in self.indexes.get_document_text(doc_id)[snippet_start:snippet_end]]
 
-    def rank_docids(self, docids):
-        return sorted([(docid, self.indexes.get_document_score(docid)) for docid in docids], key=lambda x: x[1], reverse=True)
-
+    """
     def find_documents_AND(self, query_terms):
         # docid -> number of query words
         query_term_count = defaultdict(set)
@@ -151,15 +146,17 @@ class Searcher(object):
                 query_term_count[docid].add(query_term)
 
         return SearchResults(self.rank_docids([doc_id for doc_id, unique_hits in query_term_count.iteritems() if len(unique_hits) == len(query_terms)]))
+    """
 
     # sort of OR
     def find_documents_OR(self, query_terms):
-        docids = set()
+        docids_and_relevance = set()
         for query_term in query_terms:
-            for (pos, docid) in self.indexes.get_documents(query_term):
-                docids.add(docid)
+            for hit in self.indexes.get_documents(query_term):
+                docids_and_relevance.add((hit.docid, hit.score))
 
-        return SearchResults(self.rank_docids(docids))
+        return SearchResults(sorted(list(docids_and_relevance), key=lambda x: x[1], reverse=True))
+
 
 
 def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementation=ShelveIndexes):

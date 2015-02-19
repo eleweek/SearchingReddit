@@ -9,8 +9,9 @@ import logging
 import cgi
 from datetime import datetime
 import workaround
+import os
 
-searcher = Searcher("indexes_shelves", ShelveIndexes)
+searcher = Searcher(os.environ["INDEXES_DIR"], ShelveIndexes)
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 Bootstrap(app)
