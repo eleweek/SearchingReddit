@@ -45,11 +45,15 @@ class ShelveIndexes(object):
     def _merge_blocks(self):
         print "Merging blocks!"
         blocks = [shelve.open(os.path.join(self.index_dir, "inverted_index_block{}".format(i))) for i in xrange(self.block_count)]
-        keys = sum([block.keys() for block in blocks],[])
+        keys = set() 
+        for block in blocks:
+            keys |= set(block.keys())
         print "Total word count", len(keys)
         merged_index = shelve.open(os.path.join(self.index_dir, "inverted_index"), "n", writeback=True)
+        key_ind = 0
         for key in keys:
-            print "MERGING", key
+            key_ind += 1
+            print "MERGING", key_ind, key
             merged_index[key] = sum([block.get(key, []) for block in blocks],[])
 
         merged_index.close()
@@ -62,7 +66,7 @@ class ShelveIndexes(object):
         self.block_count += 1
 
     def add_document(self, url, doc):
-        if self.doc_count % 200 == 0:
+        if self.doc_count % 2000 == 0:
             self._create_new_ii_block()
 
         self.doc_count += 1
@@ -179,7 +183,7 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
 
         indexer.add_document(doc_json['url'], workaround.Document(parsed_doc, int(doc_json['score'])))
         # progressbar.update(indexed_docs_num)
-
+    indexer._merge_blocks()
     indexer.save_on_disk(index_dir)
 
 
