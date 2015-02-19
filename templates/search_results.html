@@ -5,7 +5,7 @@
 {% block content %}
   <div class="container">
     <p>
-        <h1>User requested [{{query}}]
+        <h1>User requested [{{query | safe}}]
         </h1>
     </p>
     <p> {{total_doc_num}} results ({{processing_time.total_seconds()}} seconds)</p>
