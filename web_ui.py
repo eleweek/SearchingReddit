@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, g
+from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
@@ -10,15 +10,10 @@ import cgi
 from datetime import datetime
 import workaround
 
+searcher = Searcher("indexes_shelves", ShelveIndexes)
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 Bootstrap(app)
-
-
-@app.before_request
-def init_searcher():
-    # TODO dir configurable
-    g.searcher = Searcher("indexes_shelves", ShelveIndexes)
 
 
 class SearchForm(Form):
@@ -41,10 +36,10 @@ def search_results(query, page):
     query_terms = to_query_terms(query)
     app.logger.info("Requested [{}]".format(" ".join(map(str, query_terms))))
     page_size = 25
-    search_results = g.searcher.find_documents_OR(query_terms)
+    search_results = searcher.find_documents_OR(query_terms)
     docids = search_results.get_page(page, page_size)
-    urls = [g.searcher.indexes.get_url(docid) for docid in docids]
-    texts = [g.searcher.generate_snippet(query_terms, docid) for docid in docids]
+    urls = [searcher.indexes.get_url(docid) for docid in docids]
+    texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
     finish_time = datetime.now()
 
     return render_template("search_results.html",

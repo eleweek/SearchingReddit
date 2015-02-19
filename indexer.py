@@ -21,6 +21,7 @@ class ShelveIndexes(object):
         self.block_count = 0 
 
     def save_on_disk(self, index_dir):
+        self.inverted_index.close()
         self.forward_index.close()
         self.url_to_id.close()
         self._merge_blocks()
@@ -29,8 +30,7 @@ class ShelveIndexes(object):
         self.inverted_index = shelve.open(os.path.join(index_dir, "inverted_index"))
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"))
         self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"))
-        self.id_to_url = {v: k for k, v in self.url_to_id.iteritems()}
-        print len(self.forward_index)
+        self.id_to_url = {v: k for k, v in self.url_to_id.items()}
 
     def start_indexing(self, index_dir):
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n", writeback=True)
@@ -49,7 +49,7 @@ class ShelveIndexes(object):
         for block in blocks:
             keys |= set(block.keys())
         print "Total word count", len(keys)
-        merged_index = shelve.open(os.path.join(self.index_dir, "inverted_index"), "n", writeback=True)
+        merged_index = shelve.open(os.path.join(self.index_dir, "inverted_index"), "n")
         key_ind = 0
         for key in keys:
             key_ind += 1
@@ -183,7 +183,6 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
 
         indexer.add_document(doc_json['url'], workaround.Document(parsed_doc, int(doc_json['score'])))
         # progressbar.update(indexed_docs_num)
-    indexer._merge_blocks()
     indexer.save_on_disk(index_dir)
 
 
