@@ -37,9 +37,14 @@ class ShelveIndexes(object):
         print len(self.forward_index)
 
     def start_indexing(self, index_dir):
-        self.inverted_index = shelve.open(os.path.join(index_dir, "inverted_index"), "n")
-        self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n")
-        self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"), "n")
+        self.inverted_index = shelve.open(os.path.join(index_dir, "inverted_index"), "n", writeback=True)
+        self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n", writeback=True)
+        self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"), "n", writeback=True)
+
+    def sync(self):
+        self.inverted_index.sync()
+        self.forward_index.sync()
+        self.url_to_id.sync()
 
     def add_document(self, url, doc):
         self.doc_count += 1
@@ -139,17 +144,23 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
     indexer = IndexesImplementation()
     indexer.start_indexing(index_dir)
     filenames = [name for name in os.listdir(stored_documents_dir)]
-    widgets = [' Indexing: ', Percentage(), ' ', Bar(marker=RotatingMarker())]
+    # widgets = [' Indexing: ', Percentage(), ' ', Bar(marker=RotatingMarker())]
     indexed_docs_num = 0
-    progressbar = ProgressBar(widgets=widgets, maxval=len(filenames))
+    # progressbar = ProgressBar(widgets=widgets, maxval=len(filenames))
     for filename in filenames:
         indexed_docs_num += 1
-        progressbar.update(indexed_docs_num)
+        # progressbar.update(indexed_docs_num)
         opened_file = open(os.path.join(stored_documents_dir, filename))
         doc_json = json.load(opened_file)
         parsed_doc = to_doc_terms(doc_json['text'])
+        print indexed_docs_num
+        if indexed_docs_num % 100 == 0:
+            print indexed_docs_num, "Syncing..."
+            indexer.sync()
+            print indexed_docs_num, "Synced!"
+
         indexer.add_document(doc_json['url'], Document(parsed_doc, int(doc_json['score'])))
-        progressbar.update(indexed_docs_num)
+        # progressbar.update(indexed_docs_num)
 
     indexer.save_on_disk(index_dir)
 
