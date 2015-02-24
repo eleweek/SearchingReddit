@@ -5,6 +5,7 @@ from collections import defaultdict
 from lang_proc import to_doc_terms
 import json
 import shelve
+import math
 from progressbar import ProgressBar, Percentage, Bar, RotatingMarker
 import workaround
 
@@ -20,6 +21,13 @@ class ShelveIndexes(object):
         self.doc_count = 0
         self.block_count = 0 
 
+    def total_doc_count(self):
+        return self._doc_count
+    
+    def average_doclen(self):
+        return self._avgdl
+            
+
     def save_on_disk(self, index_dir):
         self.inverted_index.close()
         self.forward_index.close()
@@ -31,6 +39,16 @@ class ShelveIndexes(object):
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"))
         self.url_to_id = shelve.open(os.path.join(index_dir, "url_to_id"))
         self.id_to_url = {v: k for k, v in self.url_to_id.items()}
+
+        # TODO: avgdl and total doc count should be calculated when indexing
+        self._doc_count = 0
+        total_word_count = 0
+        for (docid, text) in self.forward_index.iteritems():
+            self._doc_count += 1
+            total_word_count += len(self.forward_index)
+        self._avgdl = total_word_count / self._doc_count
+
+        print "LOADED!"
 
     def start_indexing(self, index_dir):
         self.forward_index = shelve.open(os.path.join(index_dir, "forward_index"), "n", writeback=True)
@@ -148,13 +166,40 @@ class Searcher(object):
         return SearchResults(self.rank_docids([doc_id for doc_id, unique_hits in query_term_count.iteritems() if len(unique_hits) == len(query_terms)]))
     """
 
-    # sort of OR
-    def find_documents_OR(self, query_terms):
+    def find_documents_and_rank_by_points(self, query_terms):
         docids_and_relevance = set()
         for query_term in query_terms:
             for hit in self.indexes.get_documents(query_term):
                 docids_and_relevance.add((hit.docid, hit.score))
 
+        return SearchResults(sorted(list(docids_and_relevance), key=lambda x: x[1], reverse=True))
+    def _bm25(self, docid, query_terms_to_posting_lists_sizes):
+        result = 0
+        text = self.indexes.get_document_text(docid)
+        text_len = len(text)
+        for qt, nd_containing in query_terms_to_posting_lists_sizes.iteritems():
+            term_frequency = float(len(filter(lambda t: qt == t, text))) / text_len
+            inverted_document_frequency = math.log((self.indexes.total_doc_count() - nd_containing + 0.5) / (nd_containing + 0.5))
+            k1 = 1.5
+            b = 0.75
+            result += inverted_document_frequency * (term_frequency * (k1+1)) / (term_frequency + k1*(1 - b + b * query_terms_to_posting_lists_sizes[qt] / self.indexes.average_doclen()))
+
+        return result
+
+    def find_documents_and_rank_by_bm25(self, query_terms):
+        docids = set()
+        query_terms_to_posting_lists_sizes = dict()
+        for query_term in query_terms:
+            posting_list = self.indexes.get_documents(query_term)
+            query_terms_to_posting_lists_sizes[query_term] = len(posting_list)
+            for hit in posting_list:
+                docids.add(hit.docid)
+
+        docids_and_relevance = set()
+        for docid in docids:
+            docids_and_relevance.add((docid, self._bm25(docid, query_terms_to_posting_lists_sizes)))
+
+        print docids_and_relevance
         return SearchResults(sorted(list(docids_and_relevance), key=lambda x: x[1], reverse=True))
 
 

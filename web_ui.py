@@ -37,7 +37,7 @@ def search_results(query, page):
     query_terms = to_query_terms(query)
     app.logger.info("Requested [{}]".format(" ".join(map(str, query_terms))))
     page_size = 25
-    search_results = searcher.find_documents_OR(query_terms)
+    search_results = searcher.find_documents_and_rank_by_points(query_terms)
     docids = search_results.get_page(page, page_size)
     urls = [searcher.indexes.get_url(docid) for docid in docids]
     texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
