@@ -43,10 +43,12 @@ class ShelveIndexes(object):
         # TODO: avgdl and total doc count should be calculated when indexing
         self._doc_count = 0
         total_word_count = 0
+        """
         for (docid, text) in self.forward_index.iteritems():
             self._doc_count += 1
             total_word_count += len(text.parsed_text)
         self._avgdl = total_word_count / self._doc_count
+        """
 
         print "LOADED!"
 
@@ -150,10 +152,17 @@ class Searcher(object):
 
         doc_len = len(self.indexes.get_document_text(doc_id))
         # TODO: 15 should be a named constant
-        snippet_start = max(best_window[0][1] - 15, 0)
-        snippet_end = min(doc_len, best_window[len(best_window) - 1][1] + 1 + 15)
+        snippet_start = max(best_window[0][1] - 8, 0)
+        snippet_end = min(doc_len, best_window[len(best_window) - 1][1] + 1 + 8)
 
-        return [(term.full_word, term in query_terms) for term in self.indexes.get_document_text(doc_id)[snippet_start:snippet_end]]
+        snippet = [(term.full_word, term in query_terms) for term in self.indexes.get_document_text(doc_id)[snippet_start:snippet_end]]
+        # TODO 50 should be a named constant too!
+        if len(snippet) > 50:
+            excessive_len = len(snippet) - 50
+            snippet = snippet[:len(snippet) / 2 - excessive_len / 2] + [("...", False)]  + snippet[len(snippet) / 2 + excessive_len / 2:]
+
+        
+        return snippet
 
     """
     def find_documents_AND(self, query_terms):
@@ -173,6 +182,7 @@ class Searcher(object):
                 docids_and_relevance.add((hit.docid, hit.score))
 
         return SearchResults(sorted(list(docids_and_relevance), key=lambda x: x[1], reverse=True))
+
     def _bm25(self, docid, query_terms_to_posting_lists_sizes):
         result = 0
         text = self.indexes.get_document_text(docid)
@@ -199,7 +209,6 @@ class Searcher(object):
         for docid in docids:
             docids_and_relevance.add((docid, self._bm25(docid, query_terms_to_posting_lists_sizes)))
 
-        print docids_and_relevance
         return SearchResults(sorted(list(docids_and_relevance), key=lambda x: x[1], reverse=True))
 
 
