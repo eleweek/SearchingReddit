@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
@@ -16,6 +16,12 @@ app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 Bootstrap(app)
 
+def url_for_other_page(page):
+    args = request.view_args.copy()
+    args['page'] = page
+    return url_for(request.endpoint, **args)
+
+app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
 class SearchForm(Form):
     user_query = StringField('user_query', validators=[DataRequired()])
@@ -39,6 +45,7 @@ def search_results(query, page):
     page_size = 25
     search_results = searcher.find_documents_and_rank_by_points(query_terms)
     docids = search_results.get_page(page, page_size)
+    pagination = search_results.get_pagination(page, page_size)
     urls = [searcher.indexes.get_url(docid) for docid in docids]
     texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
     finish_time = datetime.now()
@@ -47,8 +54,7 @@ def search_results(query, page):
                            processing_time=(finish_time-start_time),
                            offset=((page-1)*page_size),
                            total_doc_num=search_results.total_doc_num(),
-                           total_pages_num=search_results.total_pages(page_size),
-                           page=page,
+                           pagination=pagination,
                            query=cgi.escape(query),
                            urls_and_texts=zip(urls, texts))
 

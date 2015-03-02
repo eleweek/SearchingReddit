@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% import "macros.html" as macros %}
 
 {% block title %} This is a search engine{% endblock %}
 
@@ -37,21 +38,7 @@
     </ol>
 
     <nav>
-      <ul class="pagination">
-          {#<li>
-          <a href="#" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-          </li>#}
-        {% for page_num in range(total_pages_num) %} 
-        <li {% if loop.index == page %} class=active {% endif %}><a href="{{url_for("search_results", query=query, page=loop.index)}}">{{loop.index}}</a></li>
-        {% endfor %}
-        {#<li>
-          <a href="#" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-          </li>#}
-      </ul>
+      {{macros.render_pagination(pagination) }}
     </nav>
 
   </div>

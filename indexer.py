@@ -111,6 +111,30 @@ class ShelveIndexes(object):
         return self.id_to_url[doc_id]
 
 
+class SerpPagination(object):
+    def __init__(self, page, page_size, total_doc_num):
+        self.page = page
+        self.page_size = page_size
+        self.pages = (total_doc_num / page_size) + 1
+
+    def iter_pages(self):
+        if self.pages == 1:
+            return [1]
+        if self.page <= 6:
+            left_part = range(1, self.page)
+        else:
+            left_part = [1, None] + range(self.page - 4, self.page)
+        right_part = range(self.page, min(self.pages + 1, self.page + 5))
+
+        result = left_part + right_part
+        if result[-1] != self.page:
+            result.append(None)
+
+        return result
+
+
+
+
 class SearchResults(object):
     def __init__(self, docids_with_relevance):
         self.docids, self.relevances = zip(*docids_with_relevance) if docids_with_relevance else ([], [])
@@ -119,8 +143,8 @@ class SearchResults(object):
         start_num = (page-1)*page_size
         return self.docids[start_num:start_num+page_size]
 
-    def total_pages(self, page_size):
-        return (len(self.docids) + page_size) / page_size
+    def get_pagination(self, page, page_size):
+        return SerpPagination(page, page_size, len(self.docids))
 
     def total_doc_num(self):
         return len(self.docids)
