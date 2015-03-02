@@ -13,5 +13,5 @@ The goal of the project is to build a small but functional search engine and liv
 
 ```
 >>> import nltk
->>> nltk.download()
+>>> nltk.download('punkt')
 ```
