@@ -11,5 +11,7 @@ The goal of the project is to build a small but functional search engine and liv
 
 1. NLTK stuff:
 
+```
 >>> import nltk
 >>> nltk.download()
+```
