@@ -2,11 +2,12 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %} This is a search engine{% endblock %}
+{% block title %} This is a search engine for /r/learnprogramming {% endblock %}
 
 {% block content %}
   <div class="container">
-    <p><h1>Hello, user</h1></p>
+    <p><h1>Search /r/learnprogramming</h1></p>
+    <br><br>
     <p>{{wtf.quick_form(form)}}</p>
   </div>
 {% endblock %}

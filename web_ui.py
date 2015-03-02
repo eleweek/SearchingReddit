@@ -24,7 +24,7 @@ def url_for_other_page(page):
 app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
 class SearchForm(Form):
-    user_query = StringField('user_query', validators=[DataRequired()])
+    user_query = StringField('Query', validators=[DataRequired()])
     search_button = SubmitField("Search!")
 
 
