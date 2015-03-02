@@ -45,7 +45,7 @@ class ShelveIndexes(object):
         total_word_count = 0
         for (docid, text) in self.forward_index.iteritems():
             self._doc_count += 1
-            total_word_count += len(self.forward_index)
+            total_word_count += len(text)
         self._avgdl = total_word_count / self._doc_count
 
         print "LOADED!"
