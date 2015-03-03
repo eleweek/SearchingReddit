@@ -23,14 +23,15 @@ def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, large
             continue
 
         logging.debug("Got {} submissions in interval {}..{}".format(len(search_results), cts1, cts2))
-        for submission in search_results:
-            save_submission(submission, storage_dir)
-
         if len(search_results) == 25:
             current_ts_interval /= 2
             cts1 = cts2 - current_ts_interval
             logging.debug("Reducing ts interval to {}".format(current_ts_interval))
             continue
+
+        for submission in search_results:
+            submission.replace_more_comments(limit=None)
+            save_submission(submission, storage_dir)
 
         cts2 = cts1
         cts1 = cts2 - current_ts_interval

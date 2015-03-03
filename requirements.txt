@@ -10,7 +10,7 @@ gunicorn==19.1.1
 itsdangerous==0.24
 nltk==3.0.0
 pip-autoremove==0.8.0
-praw==2.1.20
+git+https://github.com/praw-dev/praw.git@af8676fea6a1f51f357b719a73017ea980500aa7
 progressbar==2.2
 requests==2.5.0
 six==1.9.0
