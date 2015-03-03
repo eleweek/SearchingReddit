@@ -1,5 +1,7 @@
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
+from nltk.corpus import stopwords
+_stop_words = stopwords.words('english')
 import itertools
 import string
 
@@ -26,6 +28,9 @@ class Term(object):
 
     def is_punctuation(self):
         return self.stem in string.punctuation
+    
+    def is_stop_word(self):
+        return self.full_word in _stop_words
 
 
 def stem_and_tokenize_text(text):

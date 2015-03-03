@@ -96,6 +96,9 @@ class ShelveIndexes(object):
         self.id_to_url[current_id] = url
         self.forward_index[str(current_id)] = doc
         for position, term in enumerate(doc.parsed_text):
+            if term.is_stop_word():
+                continue
+
             stem = term.stem.encode('utf8')
             if stem not in self.inverted_index:
                 self.inverted_index[stem] = []
