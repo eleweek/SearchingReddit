@@ -7,7 +7,6 @@ from crawler_utils import save_submission
 
 
 # Downloads all the self posts from given subreddit
-# TODO: dynamically change ts_interval
 def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, largest_timestamp):
     mkpath(storage_dir, mode=0755)
     r = praw.Reddit(user_agent='SearchingReddit project 0.2 by /u/godlikesme')
@@ -16,9 +15,7 @@ def download_the_whole_subreddit(storage_dir, subreddit_name, ts_interval, large
     cts2 = largest_timestamp
     cts1 = largest_timestamp - ts_interval
     current_ts_interval = ts_interval
-    # TODO start_timestamp = subreddit creation time
     while True:
-        # get submissions here
         try:
             search_results = list(r.search('timestamp:{}..{}'.format(cts1, cts2), subreddit=subreddit_name, syntax='cloudsearch'))
         except Exception as e:
