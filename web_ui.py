@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
@@ -46,6 +46,8 @@ def search_results(query, page):
     search_results = searcher.find_documents_and_rank_by_points(query_terms)
     docids = search_results.get_page(page, page_size)
     pagination = search_results.get_pagination(page, page_size)
+    if page > pagination.pages:
+        abort(404)
     urls = [searcher.indexes.get_url(docid) for docid in docids]
     texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
     finish_time = datetime.now()
