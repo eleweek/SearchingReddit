@@ -1,7 +1,8 @@
 class Document(object):
-    def __init__(self, parsed_text, score):
+    def __init__(self, parsed_text, score, title):
         self.parsed_text = parsed_text
         self.score = score
+        self.title = title
 
 
 class InvertedIndexHit(object):

@@ -113,6 +113,8 @@ class ShelveIndexes(object):
     def get_url(self, doc_id):
         return self.id_to_url[doc_id]
 
+    def get_title(self, doc_id):
+        return self.forward_index[str(doc_id)].title
 
 class SerpPagination(object):
     def __init__(self, page, page_size, total_doc_num):
@@ -259,7 +261,7 @@ def create_index_from_dir_API(stored_documents_dir, index_dir, IndexesImplementa
             indexer.sync()
             print indexed_docs_num, "Synced!"
 
-        indexer.add_document(doc_json['url'], workaround.Document(parsed_doc, int(doc_json['score'])))
+        indexer.add_document(doc_json['url'], workaround.Document(parsed_doc, int(doc_json['score']), doc_json["title"]))
         # progressbar.update(indexed_docs_num)
     indexer.save_on_disk(index_dir)
 

@@ -48,8 +48,9 @@ def search_results(query, page):
     pagination = search_results.get_pagination(page, page_size)
     if page > pagination.pages:
         abort(404)
-    urls = [searcher.indexes.get_url(docid) for docid in docids]
-    texts = [searcher.generate_snippet(query_terms, docid) for docid in docids]
+    docs = []
+    for docid in docids:
+        docs.append((searcher.indexes.get_url(docid), searcher.generate_snippet(query_terms, docid), searcher.indexes.get_title(docid)))
     finish_time = datetime.now()
 
     return render_template("search_results.html",
@@ -58,7 +59,7 @@ def search_results(query, page):
                            total_doc_num=search_results.total_doc_num(),
                            pagination=pagination,
                            query=cgi.escape(query),
-                           urls_and_texts=zip(urls, texts))
+                           docs=docs)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
