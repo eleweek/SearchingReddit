@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 import argparse
 import os
-from collections import defaultdict
 from lang_proc import to_doc_terms
 import json
 import shelve
 import math
-from progressbar import ProgressBar, Percentage, Bar, RotatingMarker
 import workaround
 
 
@@ -19,14 +17,13 @@ class ShelveIndexes(object):
         self.url_to_id = None
         self.id_to_url = dict()
         self.doc_count = 0
-        self.block_count = 0 
+        self.block_count = 0
 
     def total_doc_count(self):
         return self._doc_count
-    
+
     def average_doclen(self):
         return self._avgdl
-            
 
     def save_on_disk(self, index_dir):
         self.inverted_index.close()
@@ -42,8 +39,8 @@ class ShelveIndexes(object):
 
         # TODO: avgdl and total doc count should be calculated when indexing
         self._doc_count = 0
-        total_word_count = 0
         """
+        total_word_count = 0
         for (docid, text) in self.forward_index.iteritems():
             self._doc_count += 1
             total_word_count += len(text.parsed_text)
@@ -65,7 +62,7 @@ class ShelveIndexes(object):
     def _merge_blocks(self):
         print "Merging blocks!"
         blocks = [shelve.open(os.path.join(self.index_dir, "inverted_index_block{}".format(i))) for i in xrange(self.block_count)]
-        keys = set() 
+        keys = set()
         for block in blocks:
             keys |= set(block.keys())
         print "Total word count", len(keys)
@@ -74,7 +71,7 @@ class ShelveIndexes(object):
         for key in keys:
             key_ind += 1
             print "MERGING", key_ind, key
-            merged_index[key] = sum([block.get(key, []) for block in blocks],[])
+            merged_index[key] = sum([block.get(key, []) for block in blocks], [])
 
         merged_index.close()
 
@@ -115,6 +112,7 @@ class ShelveIndexes(object):
 
     def get_title(self, doc_id):
         return self.forward_index[str(doc_id)].title
+
 
 class SerpPagination(object):
     def __init__(self, page, page_size, total_doc_num):

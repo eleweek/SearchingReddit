@@ -28,7 +28,7 @@ class Term(object):
 
     def is_punctuation(self):
         return self.stem in string.punctuation
-    
+
     def is_stop_word(self):
         return self.full_word in _stop_words
 

@@ -8,20 +8,23 @@ from lang_proc import to_query_terms
 import logging
 import cgi
 from datetime import datetime
-import workaround
 import os
+import workaround # NOQA
 
 searcher = Searcher(os.environ["INDEXES_DIR"], ShelveIndexes)
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 Bootstrap(app)
 
+
 def url_for_other_page(page):
     args = request.view_args.copy()
     args['page'] = page
     return url_for(request.endpoint, **args)
 
+
 app.jinja_env.globals['url_for_other_page'] = url_for_other_page
+
 
 class SearchForm(Form):
     user_query = StringField('Query', validators=[DataRequired()])
